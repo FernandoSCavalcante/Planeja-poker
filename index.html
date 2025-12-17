@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokéPlanning Real-Time</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --primary: #6366f1;
+        --secondary: #ec4899;
+        --bg: #0f172a;
+        --card-bg: rgba(255, 255, 255, 0.05);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: radial-gradient(circle at top left, #1e293b, #0f172a);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      h1 {
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        background: linear-gradient(to right, #818cf8, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Setup do Treinador */
+      .setup-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        padding: 25px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 30px;
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      }
+
+      .avatar-list {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 15px;
+      }
+      .avatar-option {
+        width: 65px;
+        height: 65px;
+        cursor: pointer;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        transition: 0.3s;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      .avatar-option:hover {
+        transform: scale(1.15);
+      }
+      .avatar-option.selected {
+        border-color: var(--secondary);
+        background: rgba(236, 72, 153, 0.2);
+        box-shadow: 0 0 20px var(--secondary);
+      }
+
+      input {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid #475569;
+        padding: 12px;
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 15px;
+        width: 85%;
+        font-size: 1rem;
+      }
+
+      /* Deck de Cartas */
+      .deck {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 40px;
+        max-width: 800px;
+      }
+      .fibo-card {
+        width: 55px;
+        height: 85px;
+        background: white;
+        color: #1e293b;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+      }
+      .fibo-card:hover {
+        transform: translateY(-8px);
+        background: var(--primary);
+        color: white;
+      }
+
+      /* Arena de Votos */
+      .arena {
+        width: 100%;
+        max-width: 900px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 30px;
+        padding: 40px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .votes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .player-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        animation: slideUp 0.4s ease;
+      }
+      .poke-img {
+        width: 80px;
+        height: 80px;
+        filter: drop-shadow(0 5px 15px rgba(99, 102, 241, 0.4));
+      }
+
+      .vote-box {
+        width: 50px;
+        height: 75px;
+        border-radius: 12px;
+        background: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.5rem;
+        border: 2px solid #475569;
+        transition: 0.5s;
+      }
+      .vote-box.revealed {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        border-color: #818cf8;
+        transform: rotateY(360deg);
+      }
+
+      .name-tag {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+
+      /* Controles */
+      .actions {
+        margin-top: 20px;
+      }
+      button {
+        padding: 14px 28px;
+        border-radius: 12px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        font-family: inherit;
+      }
+      .btn-reveal {
+        background: #e67e22;
+        color: white;
+        box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+      }
+      .btn-reset {
+        background: #334155;
+        color: #cbd5e1;
+        margin-left: 15px;
+      }
+      button:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+      }
+
+      /* Player de Música */
+      .music-player {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        padding: 12px 20px;
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
+      }
+      #musicBtn {
+        background: var(--primary);
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        border-radius: 20px;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>PokéPlanning Poker</h1>
+
+    <div class="setup-container">
+      <input
+        type="text"
+        id="playerName"
+        placeholder="Nome do Treinador..."
+        value="Treinador" />
+      <div class="avatar-list" id="avatarList"></div>
+      <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 12px">
+        Escolha seu Pokémon antes de votar
+      </p>
+    </div>
+
+    <div class="deck" id="deck"></div>
+
+    <div class="arena">
+      <div class="votes-grid" id="votesDisplay"></div>
+      <div class="actions">
+        <button class="btn-reveal" id="btnReveal">Revelar Votos</button>
+        <button class="btn-reset" id="btnReset">Nova Rodada</button>
+      </div>
+    </div>
+
+    <div class="music-player">
+      <span style="font-size: 0.8rem">🎵 Música</span>
+      <audio id="bgMusic" loop>
+        <source
+          src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+          type="audio/mpeg" />
+      </audio>
+      <button id="musicBtn">Play</button>
+      <input
+        type="range"
+        id="volumeControl"
+        min="0"
+        max="1"
+        step="0.1"
+        value="0.3"
+        style="width: 50px; margin: 0" />
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        set,
+        onValue,
+        push,
+        remove,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCZtpN68ZmtN3SWWMYSmZ5XgcNyPpw2lM",
+        authDomain: "planejapoker.firebaseapp.com",
+        databaseURL: "https://planejapoker-default-rtdb.firebaseio.com",
+        projectId: "planejapoker",
+        storageBucket: "planejapoker.firebasestorage.app",
+        messagingSenderId: "506605019450",
+        appId: "1:506605019450:web:09f9765505a7708c7cb003",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const votesRef = ref(db, "poker/votes");
+      const configRef = ref(db, "poker/config");
+
+      // Lógica de Avatares
+      const pokeIds = [1, 4, 7, 25, 133, 94, 143, 151];
+      let selectedAvatar = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png`;
+
+      const avatarList = document.getElementById("avatarList");
+      pokeIds.forEach((id) => {
+        const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+        const img = document.createElement("img");
+        img.src = url;
+        img.className = "avatar-option" + (id === 25 ? " selected" : "");
+        img.onclick = () => {
+          document
+            .querySelectorAll(".avatar-option")
+            .forEach((el) => el.classList.remove("selected"));
+          img.classList.add("selected");
+          selectedAvatar = url;
+        };
+        avatarList.appendChild(img);
+      });
+
+      // Gerar Deck Fibonacci
+      const fibo = [0, 1, 2, 3, 5, 8, 13, 21, "?"];
+      const deckDiv = document.getElementById("deck");
+      fibo.forEach((n) => {
+        const c = document.createElement("div");
+        c.className = "fibo-card";
+        c.innerText = n;
+        c.onclick = () => {
+          const name =
+            document.getElementById("playerName").value || "Treinador";
+          push(votesRef, { name, value: n, avatar: selectedAvatar });
+        };
+        deckDiv.appendChild(c);
+      });
+
+      // Sincronização Firebase
+      let isRevealed = false;
+      onValue(configRef, (s) => (isRevealed = s.val()?.revealed || false));
+      onValue(votesRef, (s) => {
+        const display = document.getElementById("votesDisplay");
+        display.innerHTML = "";
+        const data = s.val();
+        if (data) {
+          Object.values(data).forEach((v) => {
+            const slot = document.createElement("div");
+            slot.className = "player-slot";
+            slot.innerHTML = `
+                        <img src="${v.avatar}" class="poke-img">
+                        <div class="vote-box ${isRevealed ? "revealed" : ""}">${
+              isRevealed ? v.value : "?"
+            }</div>
+                        <div class="name-tag">${v.name}</div>`;
+            display.appendChild(slot);
+          });
+        }
+      });
+
+      // Botões de Ação
+      document.getElementById("btnReveal").onclick = () =>
+        set(configRef, { revealed: true });
+      document.getElementById("btnReset").onclick = () => {
+        remove(votesRef);
+        set(configRef, { revealed: false });
+      };
+
+      // Lógica da Música
+      const music = document.getElementById("bgMusic");
+      const musicBtn = document.getElementById("musicBtn");
+      const vol = document.getElementById("volumeControl");
+
+      musicBtn.onclick = () => {
+        if (music.paused) {
+          music.play();
+          musicBtn.innerText = "Pause";
+        } else {
+          music.pause();
+          musicBtn.innerText = "Play";
+        }
+      };
+      vol.oninput = (e) => (music.volume = e.target.value);
+    </script>
+  </body>
+</html>
