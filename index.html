@@ -3,278 +3,656 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PokéPlanning Real-Time</title>
+    <title>PanejaPoker - Legendary Johto Edition</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap"
       rel="stylesheet" />
     <style>
       :root {
-        --primary: #6366f1;
+        --primary: #8b5cf6;
         --secondary: #ec4899;
-        --bg: #0f172a;
-        --card-bg: rgba(255, 255, 255, 0.05);
+        --accent: #2ecc71;
+        --pokedex-red: #dc0a2d;
+        --pokedex-dark-red: #8b081e;
+        --thunder: #ffcb05;
+        --glass: rgba(15, 23, 42, 0.95);
+        --border: rgba(255, 255, 255, 0.1);
+        --text-color: #ffffff;
+        --bg-gradient: linear-gradient(
+          135deg,
+          #020617 0%,
+          #0f172a 50%,
+          #1e1b4b 100%
+        );
+        --aura-color: #8b5cf6;
+        --card-bg: #ffffff;
+        --card-text: #1e293b;
       }
-
+      body.light-mode {
+        --glass: rgba(255, 255, 255, 0.9);
+        --border: rgba(0, 0, 0, 0.1);
+        --text-color: #1e293b;
+        --card-bg: #1e293b;
+        --card-text: #ffffff;
+        --bg-gradient: linear-gradient(
+          135deg,
+          #bae6fd 0%,
+          #7dd3fc 50%,
+          #e0f2fe 100%
+        );
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
         font-family: "Inter", sans-serif;
-        background: radial-gradient(circle at top left, #1e293b, #0f172a);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
+        background: var(--bg-gradient);
+        background-attachment: fixed;
+        color: var(--text-color);
         margin: 0;
-        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         overflow-x: hidden;
+        transition: background 0.5s ease;
       }
 
-      h1 {
-        font-weight: 800;
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        background: linear-gradient(to right, #818cf8, #f472b6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+      /* EFEITO LENDÁRIO (PRISMÁTICO) */
+      @keyframes prismatic {
+        0% {
+          filter: saturate(2) drop-shadow(0 0 20px #ff0000);
+        }
+        20% {
+          filter: saturate(2) drop-shadow(0 0 25px #ff8800);
+        }
+        40% {
+          filter: saturate(2) drop-shadow(0 0 20px #ffff00);
+        }
+        60% {
+          filter: saturate(2) drop-shadow(0 0 25px #00ff00);
+        }
+        80% {
+          filter: saturate(2) drop-shadow(0 0 20px #00ffff);
+        }
+        100% {
+          filter: saturate(2) drop-shadow(0 0 25px #ff00ff);
+        }
+      }
+      .legendary-aura {
+        animation: prismatic 3s linear infinite !important;
+      }
+      .legendary-border {
+        border-left: 8px solid transparent !important;
+        border-image: linear-gradient(
+            to bottom,
+            red,
+            orange,
+            yellow,
+            green,
+            blue,
+            indigo,
+            violet
+          )
+          1 !important;
       }
 
-      /* Setup do Treinador */
-      .setup-container {
-        background: var(--card-bg);
-        backdrop-filter: blur(12px);
-        padding: 25px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 30px;
-        width: 100%;
-        max-width: 600px;
-        text-align: center;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      /* ANIMAÇÃO CHOQUE DO TROVÃO */
+      body.thunder-shock {
+        animation: master-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
       }
-
-      .avatar-list {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 15px;
-      }
-      .avatar-option {
-        width: 65px;
-        height: 65px;
-        cursor: pointer;
-        border-radius: 50%;
-        border: 3px solid transparent;
-        transition: 0.3s;
-        background: rgba(0, 0, 0, 0.3);
-      }
-      .avatar-option:hover {
-        transform: scale(1.15);
-      }
-      .avatar-option.selected {
-        border-color: var(--secondary);
-        background: rgba(236, 72, 153, 0.2);
-        box-shadow: 0 0 20px var(--secondary);
-      }
-
-      input {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid #475569;
-        padding: 12px;
-        border-radius: 10px;
-        color: white;
-        margin-bottom: 15px;
-        width: 85%;
-        font-size: 1rem;
-      }
-
-      /* Deck de Cartas */
-      .deck {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-bottom: 40px;
-        max-width: 800px;
-      }
-      .fibo-card {
-        width: 55px;
-        height: 85px;
-        background: white;
-        color: #1e293b;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.4rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-      }
-      .fibo-card:hover {
-        transform: translateY(-8px);
-        background: var(--primary);
-        color: white;
-      }
-
-      /* Arena de Votos */
-      .arena {
-        width: 100%;
-        max-width: 900px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 30px;
-        padding: 40px;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-      }
-      .votes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
-      }
-
-      .player-slot {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        animation: slideUp 0.4s ease;
-      }
-      .poke-img {
-        width: 80px;
-        height: 80px;
-        filter: drop-shadow(0 5px 15px rgba(99, 102, 241, 0.4));
-      }
-
-      .vote-box {
-        width: 50px;
-        height: 75px;
-        border-radius: 12px;
-        background: #334155;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.5rem;
-        border: 2px solid #475569;
-        transition: 0.5s;
-      }
-      .vote-box.revealed {
-        background: linear-gradient(135deg, #6366f1, #a855f7);
-        border-color: #818cf8;
-        transform: rotateY(360deg);
-      }
-
-      .name-tag {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        font-weight: 500;
-      }
-
-      /* Controles */
-      .actions {
-        margin-top: 20px;
-      }
-      button {
-        padding: 14px 28px;
-        border-radius: 12px;
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-        font-family: inherit;
-      }
-      .btn-reveal {
-        background: #e67e22;
-        color: white;
-        box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
-      }
-      .btn-reset {
-        background: #334155;
-        color: #cbd5e1;
-        margin-left: 15px;
-      }
-      button:hover {
-        transform: scale(1.05);
-        filter: brightness(1.1);
-      }
-
-      /* Player de Música */
-      .music-player {
+      body.thunder-shock::before {
+        content: "";
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(10px);
-        padding: 12px 20px;
-        border-radius: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255, 255, 0, 0.4);
+        z-index: 9999;
+        pointer-events: none;
+        animation: thunder-flash 0.1s alternate 4;
       }
-      #musicBtn {
-        background: var(--primary);
-        padding: 6px 15px;
-        font-size: 0.8rem;
-        border-radius: 20px;
+      @keyframes master-shake {
+        10%,
+        90% {
+          transform: translate3d(-4px, -2px, 0) rotate(-1deg);
+        }
+        20%,
+        80% {
+          transform: translate3d(6px, 4px, 0) rotate(1deg);
+        }
+        30%,
+        50%,
+        70% {
+          transform: translate3d(-10px, -6px, 0) rotate(-2deg);
+        }
+        40%,
+        60% {
+          transform: translate3d(10px, 6px, 0) rotate(2deg);
+        }
       }
-
-      @keyframes slideUp {
+      @keyframes thunder-flash {
         from {
           opacity: 0;
-          transform: translateY(20px);
         }
         to {
           opacity: 1;
+        }
+      }
+
+      /* TÍTULO E PIKACHU */
+      .main-title-container {
+        position: fixed;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 2000;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .main-title-text {
+        font-weight: 900;
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
+        color: #ffcb05;
+        margin: 0;
+        text-shadow: 3px 3px 0 #3b4cca, -1px -1px 0 #3b4cca, 1px -1px 0 #3b4cca,
+          -1px 1px 0 #3b4cca;
+      }
+      .title-pikachu {
+        width: 55px;
+        height: auto;
+        animation: bounce 2s infinite ease-in-out;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
           transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      /* DIVISOR POKEBOLA */
+      .separator-pokeball {
+        margin-bottom: 25px;
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+        animation: spin 15s linear infinite;
+        display: flex;
+        justify-content: center;
+      }
+      .separator-pokeball img {
+        width: 100px;
+        height: 100px;
+      }
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* HUD NEON */
+      .hero-info {
+        position: fixed;
+        bottom: 70vh;
+        z-index: 10;
+        opacity: 0;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+          opacity 0.5s ease;
+        background: rgba(15, 23, 42, 0.85);
+        padding: 25px 35px;
+        border-radius: 4px 25px 25px 4px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 8px solid var(--aura-color);
+        color: #fff;
+        min-width: 260px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        transform: translateY(20px);
+        pointer-events: none;
+      }
+      .hero-info.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .info-left {
+        left: 40px;
+      }
+      .info-right {
+        right: 40px;
+        text-align: right;
+        border-radius: 25px 4px 4px 25px;
+        border-left: none;
+        border-right: 8px solid var(--aura-color);
+      }
+      .p-gen {
+        font-size: 0.6rem;
+        color: var(--aura-color);
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      .p-name-info {
+        font-size: 2.2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0;
+        line-height: 1;
+      }
+      .type-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.65rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: white;
+        margin-top: 10px;
+      }
+
+      /* HERÓIS LATERAIS */
+      .hero-bg {
+        position: fixed;
+        width: 35vw;
+        height: 65vh;
+        max-width: 500px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        z-index: -1;
+        opacity: 0;
+        transition: 0.8s ease;
+        animation: floatHero 6s ease-in-out infinite;
+      }
+      .hero-bg.active {
+        opacity: 0.55;
+        filter: saturate(1.5) drop-shadow(0 0 35px var(--aura-color));
+      }
+      @keyframes floatHero {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+      .hero-left {
+        left: 0;
+        bottom: 0;
+        transform: scaleX(-1);
+      }
+      .hero-right {
+        right: 0;
+        bottom: 0;
+      }
+
+      /* LOGIN POKEDEX */
+      #loginScreen {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 100;
+        padding: 110px 15px 50px;
+      }
+      .pokedex-box {
+        background: var(--pokedex-red);
+        padding: 40px;
+        border-radius: 30px 30px 30px 120px;
+        width: 90%;
+        max-width: 780px;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        border: 10px solid var(--pokedex-dark-red);
+      }
+      .pokedex-screen {
+        background: #222;
+        border: 15px solid #333;
+        border-radius: 10px 10px 10px 60px;
+        padding: 20px;
+      }
+      #loginName {
+        width: 100%;
+        background: #000;
+        color: #0f0;
+        border: 2px solid #444;
+        padding: 18px;
+        font-family: "Courier New", monospace;
+        margin-bottom: 15px;
+        outline: none;
+        font-size: 1.15rem;
+        font-weight: bold;
+        text-align: center;
+        text-transform: uppercase;
+        border-radius: 10px;
+        box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.1);
+      }
+      .kanto-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+        gap: 12px;
+        height: 340px;
+        overflow-y: auto;
+        padding: 12px;
+        background: #d1d5db;
+        border-radius: 8px;
+        border: 4px solid #333;
+      }
+      .poke-select {
+        cursor: pointer;
+        background: #fff;
+        border-radius: 10px;
+        padding: 8px;
+        text-align: center;
+        border-bottom: 4px solid #999;
+        transition: 0.2s;
+      }
+      .poke-select.selected {
+        border-color: var(--pokedex-red);
+        transform: scale(1.05);
+        background: #fff1f2;
+        border-bottom-width: 6px;
+        box-shadow: 0 0 15px var(--pokedex-red);
+      }
+
+      /* ARENA E VOTOS */
+      #gameScreen {
+        display: none;
+        width: 100%;
+        height: 100vh;
+        flex-direction: row;
+      }
+      .sidebar {
+        width: 280px;
+        background: var(--glass);
+        border-right: 1px solid var(--border);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 20;
+      }
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 120px 20px 40px;
+        position: relative;
+      }
+      .arena {
+        width: 100%;
+        max-width: 950px;
+        background: var(--glass);
+        border-radius: 60px;
+        padding: 80px 30px 60px;
+        border: 1px solid var(--border);
+        position: relative;
+        min-height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .votes-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 40px;
+        width: 100%;
+      }
+      .user-slot {
+        width: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: 0.3s;
+      }
+      .pokeball-img {
+        width: 95px;
+        height: 95px;
+        object-fit: contain;
+        transition: 0.4s;
+      }
+      .pokemon-out {
+        transform: scale(1.4);
+        filter: saturate(1.7) contrast(1.1)
+          drop-shadow(0 0 15px var(--aura-color));
+      }
+
+      .v-box {
+        width: 55px;
+        height: 85px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 2rem;
+        border: 2px solid var(--border);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: var(--text-color);
+      }
+      .v-box.revealed {
+        width: 85px;
+        height: 125px;
+        font-size: 3rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        transform: rotateY(360deg);
+        box-shadow: 0 0 25px var(--primary);
+        border: none;
+      }
+      #resultInfo {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--accent);
+        color: #000;
+        padding: 12px 50px;
+        border-radius: 40px;
+        font-weight: 900;
+        font-size: 1.4rem;
+        z-index: 100;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* DECK */
+      .deck {
+        display: flex;
+        gap: 15px;
+        margin-top: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+      .card {
+        width: 85px;
+        height: 125px;
+        background: var(--card-bg);
+        color: var(--card-text);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        border: none;
+      }
+      .card.selected {
+        background: var(--secondary);
+        color: white;
+        transform: translateY(-25px) scale(1.1);
+        box-shadow: 0 15px 40px var(--secondary);
+      }
+
+      #btnReveal.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: grayscale(1);
+      }
+      .p-btn {
+        padding: 15px 30px;
+        border-radius: 12px;
+        border: none;
+        font-weight: 900;
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: 0.2s;
+        box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        background: rgba(0, 0, 0, 0.2);
+        color: white;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 3000;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+
+      @media (max-width: 850px) {
+        #gameScreen {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        .hero-info,
+        .hero-bg {
+          display: none;
         }
       }
     </style>
   </head>
-  <body>
-    <h1>PokéPlanning Poker</h1>
+  <body id="body">
+    <div id="roamingContainer"></div>
+    <button class="theme-toggle" id="themeBtn">🌙</button>
 
-    <div class="setup-container">
-      <input
-        type="text"
-        id="playerName"
-        placeholder="Nome do Treinador..."
-        value="Treinador" />
-      <div class="avatar-list" id="avatarList"></div>
-      <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 12px">
-        Escolha seu Pokémon antes de votar
-      </p>
+    <div class="main-title-container">
+      <h1 class="main-title-text">PanejaPoker</h1>
+      <img
+        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+        alt="Pikachu"
+        class="title-pikachu" />
     </div>
 
-    <div class="deck" id="deck"></div>
+    <div id="heroLeft" class="hero-bg hero-left"></div>
+    <div id="heroRight" class="hero-bg hero-right"></div>
+    <div id="infoLeft" class="hero-info info-left"></div>
+    <div id="infoRight" class="hero-info info-right"></div>
 
-    <div class="arena">
-      <div class="votes-grid" id="votesDisplay"></div>
-      <div class="actions">
-        <button class="btn-reveal" id="btnReveal">Revelar Votos</button>
-        <button class="btn-reset" id="btnReset">Nova Rodada</button>
+    <div id="loginScreen">
+      <div class="separator-pokeball">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg"
+          alt="Pokéball" />
+      </div>
+      <div class="pokedex-box">
+        <div class="pokedex-screen">
+          <input
+            type="text"
+            id="loginName"
+            placeholder="ID TREINADOR (16)..."
+            maxlength="16" />
+          <div class="kanto-grid" id="kantoGrid"></div>
+        </div>
+        <button
+          id="btnSync"
+          onclick="enterGym()"
+          class="p-btn"
+          style="background: #333; color: #fff; width: 100%; margin-top: 25px">
+          ENTRAR NA ARENA
+        </button>
       </div>
     </div>
 
-    <div class="music-player">
-      <span style="font-size: 0.8rem">🎵 Música</span>
-      <audio id="bgMusic" loop>
-        <source
-          src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-          type="audio/mpeg" />
-      </audio>
-      <button id="musicBtn">Play</button>
-      <input
-        type="range"
-        id="volumeControl"
-        min="0"
-        max="1"
-        step="0.1"
-        value="0.3"
-        style="width: 50px; margin: 0" />
+    <div id="gameScreen">
+      <div class="sidebar">
+        <h3 style="font-size: 0.75rem; opacity: 0.7">
+          MESTRES: <span id="userCount" style="color: var(--accent)">0</span>
+        </h3>
+        <div
+          id="sidebarUsers"
+          style="flex: 1; overflow-y: auto; margin-top: 15px"></div>
+        <button
+          onclick="clearAllUsers()"
+          class="p-btn"
+          style="background: #8b081e; color: white; font-size: 0.75rem">
+          ENCERRAR ARENA
+        </button>
+        <button
+          onclick="exitGym()"
+          class="p-btn"
+          style="
+            background: #333;
+            color: white;
+            font-size: 0.75rem;
+            margin-top: 10px;
+          ">
+          SAIR
+        </button>
+      </div>
+      <div class="main-content">
+        <div class="arena">
+          <div id="resultInfo" style="display: none"></div>
+          <div class="votes-grid" id="votesDisplay"></div>
+        </div>
+        <div id="deck" class="deck"></div>
+        <div
+          style="
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+          ">
+          <button
+            id="btnReveal"
+            class="p-btn"
+            style="background: #2ecc71; color: #fff; width: 150px">
+            REVELAR
+          </button>
+          <button
+            id="btnNudge"
+            class="p-btn"
+            style="background: #f1c40f; color: #333; width: 240px">
+            ⚡ CHOQUE DO TROVÃO
+          </button>
+          <button
+            id="btnReset"
+            class="p-btn"
+            style="background: #3498db; color: #fff; width: 150px">
+            RESET
+          </button>
+        </div>
+      </div>
     </div>
 
     <script type="module">
@@ -284,8 +662,8 @@
         ref,
         set,
         onValue,
-        push,
         remove,
+        update,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
       const firebaseConfig = {
@@ -303,86 +681,285 @@
       const votesRef = ref(db, "poker/votes");
       const configRef = ref(db, "poker/config");
 
-      // Lógica de Avatares
-      const pokeIds = [1, 4, 7, 25, 133, 94, 143, 151];
-      let selectedAvatar = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png`;
+      const sndSelect = new Audio(
+        "https://play.pokemonshowdown.com/audio/sfx/item.mp3"
+      );
+      const sndVote = new Audio(
+        "https://play.pokemonshowdown.com/audio/sfx/pokeball.mp3"
+      );
+      const sndReveal = new Audio(
+        "https://play.pokemonshowdown.com/audio/sfx/success.mp3"
+      );
+      const sndThunder = new Audio(
+        "https://play.pokemonshowdown.com/audio/cries/pikachu.mp3"
+      );
 
-      const avatarList = document.getElementById("avatarList");
-      pokeIds.forEach((id) => {
-        const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-        const img = document.createElement("img");
-        img.src = url;
-        img.className = "avatar-option" + (id === 25 ? " selected" : "");
-        img.onclick = () => {
+      const pokeballImg =
+        "https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg";
+      const typeColors = {
+        normal: "#A8A77A",
+        fire: "#EE8130",
+        water: "#6390F0",
+        grass: "#7AC74C",
+        electric: "#F7D02C",
+        ice: "#96D9D6",
+        fighting: "#C22E28",
+        poison: "#A33EA1",
+        ground: "#E2BF65",
+        flying: "#A98FF3",
+        psychic: "#F95587",
+        bug: "#A6B91A",
+        rock: "#B6A136",
+        ghost: "#735797",
+        dragon: "#6F35FC",
+        steel: "#B7B7CE",
+        fairy: "#D685AD",
+      };
+
+      // LISTA DE IDs LENDÁRIOS (GEN 1 & 2)
+      const legendaries = [
+        144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251,
+      ];
+
+      let currentUser = { name: "", avatar: "", id: 0 };
+      let isRevealed = false;
+      let lastNudge = null;
+      let isFirstNudgeLoad = true;
+      let allVoted = false;
+
+      async function updateHeroes(pokeId) {
+        const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
+        const left = document.getElementById("heroLeft");
+        const right = document.getElementById("heroRight");
+        const infoL = document.getElementById("infoLeft");
+        const infoR = document.getElementById("infoRight");
+
+        left.style.backgroundImage = `url('${url}')`;
+        right.style.backgroundImage = `url('${url}')`;
+        left.classList.add("active");
+        right.classList.add("active");
+
+        // Aplica efeito lendário no fundo se necessário
+        if (legendaries.includes(pokeId)) {
+          left.classList.add("legendary-aura");
+          right.classList.add("legendary-aura");
+          infoL.classList.add("legendary-border");
+          infoR.classList.add("legendary-border");
+        } else {
+          left.classList.remove("legendary-aura");
+          right.classList.remove("legendary-aura");
+          infoL.classList.remove("legendary-border");
+          infoR.classList.remove("legendary-border");
+        }
+
+        try {
+          const res = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${pokeId}`
+          );
+          const data = await res.json();
+          const color = typeColors[data.types[0].type.name];
+          document.documentElement.style.setProperty("--aura-color", color);
+          const badges = data.types
+            .map(
+              (t) =>
+                `<span class="type-badge" style="background:${
+                  typeColors[t.type.name]
+                }">${t.type.name.toUpperCase()}</span>`
+            )
+            .join("");
+          const content = `<div class="p-gen">#${pokeId
+            .toString()
+            .padStart(3, "0")} DATA</div><div class="p-name-info">${
+            data.name
+          }</div><div>${badges}</div>`;
+          infoL.innerHTML = content;
+          infoR.innerHTML = content;
           document
-            .querySelectorAll(".avatar-option")
-            .forEach((el) => el.classList.remove("selected"));
-          img.classList.add("selected");
-          selectedAvatar = url;
-        };
-        avatarList.appendChild(img);
-      });
+            .querySelectorAll(".hero-info")
+            .forEach((el) => el.classList.add("active"));
+        } catch (e) {}
+      }
 
-      // Gerar Deck Fibonacci
+      function renderPokeGrid() {
+        const grid = document.getElementById("kantoGrid");
+        for (let i = 1; i <= 251; i++) {
+          const div = document.createElement("div");
+          div.className = "poke-select";
+          const img = document.createElement("img");
+          img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`;
+          img.style.width = "60px";
+          div.onclick = () => {
+            sndSelect.currentTime = 0;
+            sndSelect.play().catch(() => {});
+            document
+              .querySelectorAll(".poke-select")
+              .forEach((el) => el.classList.remove("selected"));
+            div.classList.add("selected");
+            currentUser.id = i;
+            currentUser.avatar = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${i}.gif`;
+            updateHeroes(i);
+          };
+          div.appendChild(img);
+          grid.appendChild(div);
+        }
+      }
+
+      window.enterGym = () => {
+        const n = document.getElementById("loginName").value.trim();
+        if (!n || currentUser.id === 0) return alert("Selecione ID e Pokémon!");
+        currentUser.name = n;
+        set(ref(db, "poker/votes/" + n), {
+          name: n,
+          avatar: currentUser.avatar,
+          pokeId: currentUser.id,
+        });
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("gameScreen").style.display = "flex";
+      };
+
+      window.exitGym = () =>
+        remove(ref(db, "poker/votes/" + currentUser.name)).then(() =>
+          location.reload()
+        );
+      window.clearAllUsers = () => {
+        if (confirm("Limpar arena?")) remove(votesRef);
+      };
+
       const fibo = [0, 1, 2, 3, 5, 8, 13, 21, "?"];
-      const deckDiv = document.getElementById("deck");
       fibo.forEach((n) => {
         const c = document.createElement("div");
-        c.className = "fibo-card";
+        c.className = "card";
         c.innerText = n;
         c.onclick = () => {
-          const name =
-            document.getElementById("playerName").value || "Treinador";
-          push(votesRef, { name, value: n, avatar: selectedAvatar });
+          if (!isRevealed) {
+            sndVote.currentTime = 0;
+            sndVote.play().catch(() => {});
+            document
+              .querySelectorAll(".card")
+              .forEach((i) => i.classList.remove("selected"));
+            c.classList.add("selected");
+            update(ref(db, "poker/votes/" + currentUser.name), { value: n });
+          }
         };
-        deckDiv.appendChild(c);
+        document.getElementById("deck").appendChild(c);
       });
 
-      // Sincronização Firebase
-      let isRevealed = false;
-      onValue(configRef, (s) => (isRevealed = s.val()?.revealed || false));
-      onValue(votesRef, (s) => {
+      function updateUI(data, revealed) {
         const display = document.getElementById("votesDisplay");
-        display.innerHTML = "";
-        const data = s.val();
-        if (data) {
-          Object.values(data).forEach((v) => {
-            const slot = document.createElement("div");
-            slot.className = "player-slot";
-            slot.innerHTML = `
-                        <img src="${v.avatar}" class="poke-img">
-                        <div class="vote-box ${isRevealed ? "revealed" : ""}">${
-              isRevealed ? v.value : "?"
-            }</div>
-                        <div class="name-tag">${v.name}</div>`;
-            display.appendChild(slot);
-          });
+        const sidebar = document.getElementById("sidebarUsers");
+        const revealBtn = document.getElementById("btnReveal");
+        if (currentUser.name && (!data || !data[currentUser.name])) {
+          location.reload();
+          return;
         }
+        display.innerHTML = "";
+        sidebar.innerHTML = "";
+        if (!data) return;
+
+        const users = Object.values(data);
+        const totalCount = users.length;
+        const votedCount = users.filter((u) => u.value !== undefined).length;
+        allVoted = totalCount > 0 && votedCount === totalCount;
+        if (allVoted) revealBtn.classList.remove("disabled");
+        else revealBtn.classList.add("disabled");
+
+        users.forEach((u) => {
+          const hasVoted = u.value !== undefined;
+          const isLedge = legendaries.includes(u.pokeId);
+          sidebar.innerHTML += `<div style="display:flex; align-items:center; gap:10px; margin-bottom:5px; font-size:0.85rem;"><img src="${
+            u.avatar
+          }" style="width:25px;"> <span style="color:var(--text-color); flex:1">${
+            u.name
+          }</span> ${hasVoted ? "✓" : ""}</div>`;
+          display.innerHTML += `<div class="user-slot"><div><img src="${
+            hasVoted ? u.avatar : pokeballImg
+          }" class="pokeball-img ${hasVoted ? "pokemon-out" : ""} ${
+            hasVoted && isLedge ? "legendary-aura" : ""
+          }"></div><div class="v-box ${hasVoted ? "visible" : ""} ${
+            revealed ? "revealed" : ""
+          }" style="opacity:${hasVoted ? 1 : 0.1}">${
+            revealed ? u.value : "?"
+          }</div><div style="font-size:0.8rem; margin-top:10px; font-weight:900; color:var(--text-color); text-transform:uppercase;">${
+            u.name
+          }</div></div>`;
+        });
+
+        document.getElementById("userCount").innerText = totalCount;
+        const res = document.getElementById("resultInfo");
+        if (revealed) {
+          let sum = 0,
+            count = 0;
+          users.forEach((u) => {
+            if (u.value !== undefined && !isNaN(parseFloat(u.value))) {
+              sum += parseFloat(u.value);
+              count++;
+            }
+          });
+          if (count > 0) {
+            res.style.display = "block";
+            res.innerText = `MÉDIA: ${(sum / count).toFixed(1)}`;
+          }
+        } else {
+          res.style.display = "none";
+        }
+      }
+
+      onValue(configRef, (snap) => {
+        const val = snap.val();
+        if (val?.revealed && !isRevealed) sndReveal.play().catch(() => {});
+        if (val?.nudge) {
+          if (isFirstNudgeLoad) {
+            isFirstNudgeLoad = false;
+            lastNudge = val.nudge;
+          } else if (val.nudge !== lastNudge) {
+            document.body.classList.add("thunder-shock");
+            sndThunder.currentTime = 0;
+            sndThunder.play().catch(() => {});
+            setTimeout(
+              () => document.body.classList.remove("thunder-shock"),
+              800
+            );
+            lastNudge = val.nudge;
+          }
+        }
+        isRevealed = val?.revealed || false;
+        onValue(votesRef, (vSnap) => updateUI(vSnap.val(), isRevealed), {
+          onlyOnce: true,
+        });
       });
 
-      // Botões de Ação
-      document.getElementById("btnReveal").onclick = () =>
-        set(configRef, { revealed: true });
+      onValue(votesRef, (snap) => updateUI(snap.val(), isRevealed));
+      document.getElementById("btnReveal").onclick = () => {
+        if (!allVoted) return alert("Todos precisam votar!");
+        update(configRef, { revealed: true });
+      };
       document.getElementById("btnReset").onclick = () => {
-        remove(votesRef);
-        set(configRef, { revealed: false });
+        update(configRef, { revealed: false }).then(() => {
+          onValue(
+            votesRef,
+            (snap) => {
+              const data = snap.val();
+              if (data) {
+                const upds = {};
+                Object.keys(data).forEach((k) => (upds[k + "/value"] = null));
+                update(votesRef, upds);
+              }
+            },
+            { onlyOnce: true }
+          );
+          document
+            .querySelectorAll(".card")
+            .forEach((c) => c.classList.remove("selected"));
+        });
       };
-
-      // Lógica da Música
-      const music = document.getElementById("bgMusic");
-      const musicBtn = document.getElementById("musicBtn");
-      const vol = document.getElementById("volumeControl");
-
-      musicBtn.onclick = () => {
-        if (music.paused) {
-          music.play();
-          musicBtn.innerText = "Pause";
-        } else {
-          music.pause();
-          musicBtn.innerText = "Play";
-        }
+      document.getElementById("btnNudge").onclick = () =>
+        update(configRef, { nudge: Date.now() });
+      document.getElementById("themeBtn").onclick = () => {
+        document.body.classList.toggle("light-mode");
+        document.getElementById("themeBtn").innerText =
+          document.body.classList.contains("light-mode") ? "☀️" : "🌙";
       };
-      vol.oninput = (e) => (music.volume = e.target.value);
+      renderPokeGrid();
     </script>
   </body>
 </html>
